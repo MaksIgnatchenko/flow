@@ -5,13 +5,17 @@
     <title>Title</title>
 </head>
 <body>
+<p>
+    Напишите функцию сложения и отдайте результат вычеслений:
+</p>
 <form action="index.php", method="post">
     <textarea name="code" id="codefield" cols="30" rows="10"></textarea>
     <input type="submit" name="submit">
 </form>
-<script>
-    var area = document.getElementById('codefield');
-    area.innerText = "<?php";
-    </script>
+    <script>
+        var area = document.getElementById('codefield');
+        var text = 'function solve($a, $b) {\n...Your code ... \nreturn ...;\n}';
+        area.innerHTML = text;
+        </script>
 </body>
 </html>
