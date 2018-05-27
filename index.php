@@ -11,14 +11,12 @@ if (isset($_POST['code'])) {
     foreach($tests as $test) {
         $data = serialize($test[0]);
         $interpreter = 'php -r ';
-        $preCode = ' $stream = fopen("php://stdin", "r");';
-        $preCode .= ' $input = stream_get_contents($stream);';
-        $preCode .= ' $args = unserialize($input);';
-        $preCode .= ' $a = $args[0];';
-        $preCode .= ' $b = $args[1];';
-        $postCode = ' $result = solve($a, $b);';
-        $postCode .= ' echo json_encode($result);';
-        $cmd = $interpreter . '\'' . $preCode . $_POST['code'] . $postCode . '\'';
+        $preCode .= '$a = $argv[1];';
+        $preCode .= '$b = $argv[2];';
+        $postCode = '$result = solve($a, $b);';
+        $postCode .= 'echo json_encode($result);';
+        $params = ' ' . $test[0][0] . ' ' . $test[0][1];
+        $cmd = $interpreter . '\'' . $preCode . $_POST['code'] . $postCode . '\'' . $params;
         $descriptorspec = array(
             0 => array("pipe", "r"),  // stdin - канал, из которого дочерний процесс будет читать
             1 => array("pipe", "w"),  // stdout - канал, в который дочерний процесс будет записывать
