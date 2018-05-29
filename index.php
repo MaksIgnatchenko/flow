@@ -5,27 +5,30 @@ $tests = [
     [[20, 20], [40]]
 ];
 
+$descriptorspec = [
+    0 => ["pipe", "r"],  // stdin
+    1 => ["pipe", "w"],  // stdout
+    2 => ["pipe", "w"] // stderr
+];
+
+$interpreter = 'php -r ';
+$wrapScript = '$data = json_decode($argv[1]);
+               foreach ($data as $arg) {
+                   $arguments[] = $arg;
+               }';
+$userCode = $_POST['code'];
+$postCode = '$result = call_user_func_array("solve", $arguments);
+             echo json_encode($result);';
+
 $mark = false;
 
 if (isset($_POST['code'])) {
     foreach($tests as $test) {
-        $data = serialize($test[0]);
-        $interpreter = 'php -r ';
-        $preCode .= '$a = $argv[1];';
-        $preCode .= '$b = $argv[2];';
-        $postCode = '$result = solve($a, $b);';
-        $postCode .= 'echo json_encode($result);';
-        $params = ' ' . $test[0][0] . ' ' . $test[0][1];
-        $cmd = $interpreter . '\'' . $preCode . $_POST['code'] . $postCode . '\'' . $params;
-        $descriptorspec = array(
-            0 => array("pipe", "r"),  // stdin - канал, из которого дочерний процесс будет читать
-            1 => array("pipe", "w"),  // stdout - канал, в который дочерний процесс будет записывать
-            2 => array("pipe", "w") // stderr - файл для записи
-        );
+        $data = json_encode($test[0]);
+        $params = ' ' . $data;
+        $cmd = $interpreter . '\'' . $wrapScript . $userCode . $postCode . '\'' . $params;
         $process = proc_open($cmd, $descriptorspec, $pipes, null, null);
         if (is_resource($process)) {
-            fwrite($pipes[0], $data);
-            fclose($pipes[0]);
             $result = stream_get_contents($pipes[1]);
             fclose($pipes[1]);
             echo stream_get_contents($pipes[2]);
@@ -44,5 +47,5 @@ if (isset($_POST['code'])) {
     }
 } else {
     require 'view.html';
-
 }
+
